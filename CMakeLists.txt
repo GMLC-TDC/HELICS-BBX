@@ -279,7 +279,7 @@ list(APPEND CMAKE_INSTALL_RPATH "./")
 # -----------------------------------------------------------------------------
 # CMAKE Subdirectories
 # -----------------------------------------------------------------------------
-
+set(BUILD_C_SHARED_LIB OFF)
 add_subdirectory(${PROJECT_SOURCE_DIR}/extern/helics)
 add_subdirectory(src)
 
