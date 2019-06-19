@@ -1,6 +1,6 @@
 [submodule "extern/HELICS"]
 	path = extern/HELICS
-	url = https://github.com/GMLC-TDC/HELICS-src.git
+	url = https://github.com/GMLC-TDC/HELICS.git
 	branch = develop
 [submodule "extern/gtest"]
 	path = extern/gtest
