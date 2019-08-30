@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-cmake_minimum_required(VERSION 3.6)
-cmake_policy(VERSION 3.6)
+cmake_minimum_required(VERSION 3.10)
+cmake_policy(VERSION 3.10)
 
 project(HELICS-BBX VERSION 0.0.1)
 
@@ -13,7 +13,7 @@ project(HELICS-BBX VERSION 0.0.1)
 # HELICS-BBX Version number
 # -----------------------------------------------------------------------------
 set(HELICS-BBX_VERSION_BUILD)
-set(HELICS-BBX_DATE "03-10-19")
+set(HELICS-BBX_DATE "08-30-19")
 
 set(
     HELICS-BBX_VERSION_UNDERSCORE
@@ -262,24 +262,9 @@ list(APPEND CMAKE_INSTALL_RPATH "./")
 
 
 # -----------------------------------------------------------------------------
-# create the fmt header only targets
-# -----------------------------------------------------------------------------
-#include(addfmt)
-
-# --------------------------------------------------------------
-#  Create the target for jsoncpp
-# -----------------------------------------------------------
-#include(addJsoncpp)
-#target_include_directories(
-#    HELICS-BBX_base_includes SYSTEM
-#    INTERFACE
-#    $<TARGET_PROPERTY:jsoncpp_lib,INTERFACE_INCLUDE_DIRECTORIES>
-#)
-
-# -----------------------------------------------------------------------------
 # CMAKE Subdirectories
 # -----------------------------------------------------------------------------
-set(BUILD_C_SHARED_LIB OFF)
+set(DISABLE_C_SHARED_LIB ON)
 add_subdirectory(${PROJECT_SOURCE_DIR}/extern/helics)
 add_subdirectory(src)
 
