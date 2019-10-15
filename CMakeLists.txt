@@ -1,19 +1,23 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Copyright (c) 2017-2019, Battelle Memorial Institute; Lawrence Livermore
+# National Security, LLC; Alliance for Sustainable Energy, LLC.
+# See the top-level NOTICE for additional details.
+# All rights reserved.
 #
-# Copyright © 2017-2019, Battelle Memorial Institute; Lawrence Livermore National
-# Security, LLC; Alliance for Sustainable Energy, LLC.  See the top-level NOTICE for additional details. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause
-#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(VERSION 3.10)
 
-project(HELICS-BBX VERSION 0.0.1)
+project(HELICS-BBX VERSION 0.0.2)
 
 # -----------------------------------------------------------------------------
 # HELICS-BBX Version number
 # -----------------------------------------------------------------------------
 set(HELICS-BBX_VERSION_BUILD)
-set(HELICS-BBX_DATE "08-30-19")
+set(HELICS-BBX_DATE "10-15-19")
 
 set(
     HELICS-BBX_VERSION_UNDERSCORE
@@ -37,12 +41,8 @@ set(
 )
 include(extraMacros)
 include(CMakeDependentOption)
+include(CTest)
 
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-	set(HELICS-BBX_CUR_PROJ ON)
-else()
-    set(HELICS-BBX_CUR_PROJ OFF)
-endif()
 # include(BuildType)
 # -----------------------------------------------------------------------------
 # set the install path to a local directory
@@ -77,24 +77,19 @@ show_variable(
 mark_as_advanced(AUTOBUILD_INSTALL_PATH)
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/logs)
-if (HELICS-BBX_CUR_PROJ)
-if (DEFINED BUILD_TESTING)
-option(BUILD_HELICS-BBX_TESTS "Enable the test executables to be built" ${BUILD_TESTING})
-else()
-option(BUILD_HELICS-BBX_TESTS "Enable the test executables to be built" ON)
-endif()
 
-else()
-endif()
-# enable testing
-if(BUILD_HELICS-BBX_TESTS)
-    include(CTest)
+
+cmake_dependent_option(HELICS-BBX_BUILD_TESTS "Enable the test executables to be built" OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
+
+
+if(HELICS-BBX_BUILD_TESTS AND BUILD_TESTING)
+    
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Prohibit in-source build
-if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(
         FATAL_ERROR
             "In-source build is not supported. Please, use an empty directory for building the project."
@@ -107,44 +102,42 @@ endif()
 	
 
 
- if (HELICS-BBX_CUR_PROJ)
-cmake_dependent_option(
+
+cmake_dependent_advanced_option(
     STATIC_STANDARD_LIB
     "Link against a static standard lib"
     OFF
-    "NOT USE_LIBCXX"
+    "NOT USE_LIBCXX;CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME"
     OFF
 )
 include(ucm)
-mark_as_advanced(STATIC_STANDARD_LIB)
+
 if(STATIC_STANDARD_LIB)
     ucm_set_runtime(STATIC)
 else()
     ucm_set_runtime(DYNAMIC)
 endif()
 
-if(MSVC)
-    option(EMBEDDED_DEBUG_INFO "embed debug info into obj files" OFF)
-    mark_as_advanced(EMBEDDED_DEBUG_INFO)
-    if(EMBEDDED_DEBUG_INFO)
+    cmake_dependent_advanced_option(EMBEDDED_DEBUG_INFO "embed debug info into obj files" OFF "MSVC;CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
+	if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    if(MSVC AND EMBEDDED_DEBUG_INFO )
         ucm_set_embedded_debug(EMBEDDED)
     else()
         ucm_set_embedded_debug(EXTERNAL)
     endif()
-endif(MSVC)
-endif (HELICS-BBX_CUR_PROJ)
+	endif()
+
 # -------------------------------------------------------------
 # add coverage target
 # -------------------------------------------------------------
-if(BUILD_HELICS-BBX_TESTS)
-    cmake_dependent_option(
-        TEST_CODE_COVERAGE
+    cmake_dependent_advanced_option(
+        HELICS-BBX_TEST_CODE_COVERAGE
         "Build a target for testing code coverage"
         OFF
-        "BUILD_HELICS-BBX_TESTS"
+        "HELICS-BBX_BUILD_TESTS"
         OFF
     )
-    if(TEST_CODE_COVERAGE)
+    if(HELICS-BBX_TEST_CODE_COVERAGE)
         if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
             include(CodeCoverage)
 
@@ -169,15 +162,12 @@ if(BUILD_HELICS-BBX_TESTS)
                     "CMAKE_BUILD_TYPE must be set to Coverage for testing code coverage"
             )
         endif()
-    endif(TEST_CODE_COVERAGE)
-endif()
-mark_as_advanced(TEST_CODE_COVERAGE)
+    endif(HELICS-BBX_TEST_CODE_COVERAGE)
 
 
+cmake_dependent_option(HELICS-BBX_GENERATE_DOXYGEN_DOC "Generate Doxygen doc target" OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
 
-option(GENERATE_DOXYGEN_DOC "Generate Doxygen doc target" OFF)
-
-if(GENERATE_DOXYGEN_DOC)
+if(HELICS-BBX_GENERATE_DOXYGEN_DOC)
     find_package(Doxygen)
     if(DOXYGEN_FOUND)
 
@@ -198,7 +188,7 @@ if(GENERATE_DOXYGEN_DOC)
             VERBATIM
         )
     endif(DOXYGEN_FOUND)
-endif(GENERATE_DOXYGEN_DOC)
+endif(HELICS-BBX_GENERATE_DOXYGEN_DOC)
 
 # if(MINGW) add_definitions(-DBOOST_USE_WINDOWS_H)
 # add_definitions(-DWIN32_LEAN_AND_MEAN) endif()
@@ -264,7 +254,7 @@ list(APPEND CMAKE_INSTALL_RPATH "./")
 # -----------------------------------------------------------------------------
 # CMAKE Subdirectories
 # -----------------------------------------------------------------------------
-set(DISABLE_C_SHARED_LIB ON)
+set(HELICS_DISABLE_C_SHARED_LIB ON CACHE INTERNAL "")
 add_subdirectory(${PROJECT_SOURCE_DIR}/extern/helics)
 add_subdirectory(src)
 
@@ -272,8 +262,8 @@ add_subdirectory(src)
 # Build the tests
 # -----------------------------------------------------------------------------
 
-if(BUILD_HELICS-BBX_TESTS AND BUILD_TESTING)
-    mark_as_advanced(BUILD_TESTING)
+mark_as_advanced(BUILD_TESTING)
+if(HELICS-BBX_BUILD_TESTS AND BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
@@ -292,15 +282,15 @@ install(
 # -------------------------------------------------------------
 # CPack
 # -------------------------------------------------------------
-option(
-    ENABLE_PACKAGE_BUILD
-    "Add projects for making packages and installers for HELICS" OFF
+cmake_dependent_option(
+    HELICS-BBX_ENABLE_PACKAGE_BUILD
+    "Add projects for making packages and installers for HELICS" OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF
 )
 
 if(ENABLE_PACKAGE_BUILD)
-    set(CPACK_PACKAGE_NAME "Helics")
+    set(CPACK_PACKAGE_NAME "Helics-BBX")
     set(CPACK_PACKAGE_VENDOR "GMLC")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "HELICS")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "HELICS-BBX")
     set(CPACK_PACKAGE_VERSION "${HELICS-BBX_VERSION}")
     set(CPACK_PACKAGE_VERSION_MAJOR ${HELICS-BBX_VERSION_MAJOR})
     set(CPACK_PACKAGE_VERSION_MINOR ${HELICS-BBX_VERSION_MINOR})
@@ -321,16 +311,9 @@ if(ENABLE_PACKAGE_BUILD)
 
     set(
         CPACK_COMPONENT_APPLICATION_DESCRIPTION
-        "Executables and helper applications for HELICS"
+        "Executables and helper applications for HELICS-BBX"
     )
-    set(
-        CPACK_COMPONENT_LIBS_DESCRIPTION
-        "Libraries for compiling and linking with HELICS"
-    )
-    set(
-        CPACK_COMPONENT_HEADERS_DESCRIPTION
-        "Headers for linking and compiling with HELICS-BBX"
-    )
+    
 
     set(CPACK_COMPONENT_RUNTIME_REQUIRED ON)
 
