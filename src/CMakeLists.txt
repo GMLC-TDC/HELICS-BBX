@@ -18,7 +18,7 @@ set(helics-bbx_headers
 add_executable(helics-bbx ${helics-bbx_sources} ${helics-bbx_headers})
 
 
-target_link_libraries(helics-bbx HELICS::helics_apps)
+target_link_libraries(helics-bbx HELICS::apps)
 
 
 INSTALL(TARGETS helics-bbx RUNTIME DESTINATION bin)

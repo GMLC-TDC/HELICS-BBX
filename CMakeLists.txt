@@ -11,13 +11,13 @@
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(VERSION 3.10)
 
-project(HELICS-BBX VERSION 0.0.2)
+project(HELICS-BBX VERSION 0.0.3)
 
 # -----------------------------------------------------------------------------
 # HELICS-BBX Version number
 # -----------------------------------------------------------------------------
 set(HELICS-BBX_VERSION_BUILD)
-set(HELICS-BBX_DATE "10-15-19")
+set(HELICS-BBX_DATE "11-14-19")
 
 set(
     HELICS-BBX_VERSION_UNDERSCORE
@@ -66,18 +66,6 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         endif(MSYS)
     endif(WIN32)
 endif()
-
-show_variable(
-    AUTOBUILD_INSTALL_PATH
-    PATH
-    "location to install the autobuild libraries and Headers"
-    "${PROJECT_BINARY_DIR}/libs"
-)
-
-mark_as_advanced(AUTOBUILD_INSTALL_PATH)
-
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/logs)
-
 
 cmake_dependent_option(HELICS-BBX_BUILD_TESTS "Enable the test executables to be built" OFF "CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME" OFF)
 
@@ -255,6 +243,11 @@ list(APPEND CMAKE_INSTALL_RPATH "./")
 # CMAKE Subdirectories
 # -----------------------------------------------------------------------------
 set(HELICS_DISABLE_C_SHARED_LIB ON CACHE INTERNAL "")
+if(HELICS-BBX_BUILD_TESTS AND BUILD_TESTING)
+	set(HELICS_BUILD_APP_EXECUTABLES ON CACHE INTERNAL "")
+else()
+   set(HELICS_BUILD_APP_EXECUTABLES OFF CACHE INTERNAL "")
+endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/extern/helics)
 add_subdirectory(src)
 
